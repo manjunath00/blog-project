@@ -1,19 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const PostSchema = new Schema({
-  _id: Schema.Types.ObjectId,
+const PostSchema = new Schema({ 
   title: {
     type: String,
     required: true
   },
   body: {
-    type: String,
-    required: true
+    type: String, 
+    required: true  
   },
   author: {
-    type: Schema.Types.ObjectId,
-    ref: "User", 
+    type: String,
     required: true
   },
   date: {
