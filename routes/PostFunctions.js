@@ -48,18 +48,49 @@ const updateAPost = async (req, res) => {
   try {
     const postId = { _id: req.params.id };
     const body = req.body;
-    const results = await Post.findByIdAndUpdate(req.params.id, {$set: body }, {
-      returnNewDocument: true
-    });
+    console.log(body["author"])
+    // if author is updated check if it is in users collection
+    if (body["author"]) {
+      const isUserExists = await User.findOne({ username: body["author"] });
+      if (isUserExists) {
+        const results = await Post.update(
+          req.params.id,
+          { $set: body },
+          {
+            returnNewDocument: true
+          }
+        );
 
-    console.log(results);
-    res.status(200).json({
-      status: "success",
-      data: {
-        results
+        console.log(results);
+        res.status(200).json({
+          status: "success",
+          data: {
+            results
+          }
+        });
+      } else {
+        // throws error if it is not in the users collection
+        throw new Error("You need to add the user before adding the post");
       }
-    });
+    } else {
+      const results = await Post.update(
+        req.params.id,
+        { $set: body },
+        {
+          returnNewDocument: true
+        }
+      );
+      res.status(200).json({
+        status: "success",
+        data: {
+          results
+        }
+      });
+
+      // console.log(results);
+    }
   } catch (err) {
+    console.log(err)
     res.status(404).json({
       status: "fail",
       message: err.message,
