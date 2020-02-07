@@ -15,6 +15,7 @@ const createAUser = async (req, res) => {
     res.status(400).json({
       status: "fail",
       data: {
+        message: error.message,
         error
       }
     });
@@ -43,6 +44,7 @@ const updateAUser = async (req, res) => {
     res.status(400).json({
       status: "fail",
       data: {
+        message: error.message,
         error
       }
     });
@@ -66,6 +68,7 @@ const getAllUsers = async (req, res) => {
       status: "fail",
 
       data: {
+        message: error.message,
         error
       }
     });
@@ -89,6 +92,7 @@ const getAUser = async (req, res) => {
       status: "fail",
       message: "Insert a valid id",
       data: {
+        message: error.message,
         error
       }
     });
