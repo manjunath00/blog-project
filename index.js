@@ -1,11 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 // custom imports
-const { DB, options } = require("./config/database");
+const { DB, options } = require("./config/database.js");
+
 const app = express();
 
 mongoose.connect(DB, options).then(results => {
-  // console.log(results);
   console.log("connected to database");
 });
 
