@@ -16,4 +16,3 @@ router.put("/:postId", updateAPost);
 router.delete("/:postId", deleteAPost);
 
 module.exports = router;
-
