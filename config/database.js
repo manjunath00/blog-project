@@ -1,4 +1,4 @@
-const DB = "mongodb://localhost:27017/blogDatabase";
+const db = "mongodb://localhost:27017/blogDatabase";
 
 const options = {
   useNewUrlParser: true,
@@ -7,7 +7,7 @@ const options = {
   useFindAndModify: false
 };
 
-module.export = {
-  DB,
+module.exports = {
+  DB : db,
   options
 };
