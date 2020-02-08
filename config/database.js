@@ -8,6 +8,6 @@ const options = {
 };
 
 module.exports = {
-  DB : db,
+  DB: db,
   options
 };

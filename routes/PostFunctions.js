@@ -48,7 +48,7 @@ const updateAPost = async (req, res) => {
   try {
     const postId = { _id: req.params.id };
     const body = req.body;
-    console.log(body["author"])
+    console.log(body["author"]);
     // if author is updated check if it is in users collection
     if (body["author"]) {
       const isUserExists = await User.findOne({ username: body["author"] });
@@ -90,7 +90,7 @@ const updateAPost = async (req, res) => {
       // console.log(results);
     }
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(404).json({
       status: "fail",
       message: err.message,

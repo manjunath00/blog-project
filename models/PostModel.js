@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const PostSchema = new Schema({ 
+const PostSchema = new Schema({
   title: {
     type: String,
     required: true,
     unique: true
   },
   body: {
-    type: String, 
-    required: true  
+    type: String,
+    required: true
   },
   author: {
     type: String,

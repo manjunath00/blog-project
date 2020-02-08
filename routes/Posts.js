@@ -9,8 +9,7 @@ const {
   newPost
 } = require("./PostFunctions");
 
-router.get("/", getAllPosts);
-router.post("/", newPost);
+router.get("/", getAllPosts).post("/", newPost);
 router.get("/:postId", getAPost);
 router.put("/:postId", updateAPost);
 router.delete("/:postId", deleteAPost);

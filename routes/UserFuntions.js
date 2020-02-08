@@ -28,11 +28,7 @@ const updateAUser = async (req, res) => {
   try {
     const id = { _id: req.params.userId };
     const updatedUser = req.body;
-    const user = await User.update(
-      id,
-      { $set: updatedUser },
-      { new: true }
-    );
+    const user = await User.update(id, { $set: updatedUser }, { new: true });
     console.log(user);
     res.status(200).json({
       status: "success",
