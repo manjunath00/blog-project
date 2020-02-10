@@ -1,12 +1,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config()
 // custom imports
-const { DB, options } = require("./config/database.js");
+const { DB, options, redisClient } = require("./config/database.js");
 
 const app = express();
-
 mongoose.connect(DB, options).then(results => {
   console.log("connected to database");
+});
+
+redisClient.on("error", function(error) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log("Redis connected");
+  }
 });
 
 // express middleware
