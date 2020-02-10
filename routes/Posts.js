@@ -1,7 +1,5 @@
 const express = require("express");
-const router = express.Router();
-const jwt = require("jsonwebtoken");
-
+const router = express.Router(); 
 
 const {
   getAllPosts,
@@ -11,11 +9,13 @@ const {
   newPost
 } = require("./PostFunctions");
 
-const { verifyToken } = require("./userAuthFunctions")
-router.get("/", getAllPosts)
-router.post("/", verifyToken, newPost);
+const { validateToken } = require("../auth/auth");
+// router.use(validateToken)
+
+router.get("/", getAllPosts);
+router.post("/", validateToken, newPost);
 router.get("/:postId", getAPost);
-router.put("/:postId", updateAPost);
-router.delete("/:postId", deleteAPost);
+router.put("/:postId", validateToken, updateAPost);
+router.delete("/:postId", validateToken, deleteAPost);
 
 module.exports = router;
