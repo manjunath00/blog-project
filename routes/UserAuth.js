@@ -5,10 +5,15 @@ const router = express.Router();
 const {
   userLogin,
   resetPassword,
+  userLogout,
   userRegister
 } = require("./userAuthFunctions");
+
+const { validateToken } = require("../auth/auth");
+
 router.post("/login", userLogin);
 router.post("/register", userRegister);
-router.post("/password", resetPassword);
+router.post("/logout", userLogout);
+router.post("/password", validateToken, resetPassword);
 
 module.exports = router;

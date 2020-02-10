@@ -1,22 +1,19 @@
-const express = require("express");
 const jwt = require("jsonwebtoken");
+const doenv = require("dotenv").config();
+
 const User = require("../models/UserModel");
-const redis = require("redis");
-const REDIS_PORT = process.env.REDIS_PORT || 6379;
+const { redisClient } = require("../config/database");
+const tokenExpiresIn = process.env.TOKEN_EXPIRES;
 
-// creates redis client
-const client = redis.createClient(REDIS_PORT);
-const secretKey = process.env.SECRET_KEY || "RmOeBolEiltZELionJuMEntErdanImEg";
+const secretKey = process.env.SECRET_KEY;
 
-console.log("secret key is", secretKey);
-
-// TODO
 // USER signin
 
 const userLogin = async (req, res) => {
   try {
-    const body = req.body;
-    const { username, password, email } = body;
+    const username = req.body.username;
+    const password = req.body.password;
+    const email = req.body.email;
     // check if the details exists or not undefined
     if (username && password && email) {
       // check if the user exists by emil
@@ -26,7 +23,17 @@ const userLogin = async (req, res) => {
       if (username === userData.username && password === userData.password) {
         const token = jwt.sign({ userData }, secretKey, {
           algorithm: "HS256",
-          expiresIn: "2m"
+          expiresIn: tokenExpiresIn
+        });
+
+        // set data to redis
+        // client.setex(username, 120, token);
+        redisClient.hset(["LoginTokens", username, token], function(err, res) {
+          if (err) {
+            console.error(err);
+          } else {
+            console.log("Result is :", res);
+          }
         });
 
         console.log("token", token);
@@ -61,25 +68,59 @@ const resetPassword = async (req, res) => {
   // 1. verify the token
   // 2. get both the password first password & confirm password
   // 3. update the password in the database
-  jwt.verify(req.token, secretKey, (err, authData) => {
-    if (err) {
-      res.sendStatus(403);
-    } else {
-      try {
-        const body = req.body;
-        const { oldPassword, newPassword, confirmPassword } = body;
-        res.json({
+
+  try {
+    const body = req.body;
+    const email = req.email;
+    const newPassword = req.body.newPassword;
+    const confirmPassword = req.body.confirmPassword;
+    const userInfo = await User.findOne({ email });
+    if (userInfo) {
+      if (newPassword === confirmPassword) {
+        const updatePwdOp = await User.findOneAndUpdate(
+          { email },
+          { $set: { password: newPassword } },
+          { new: true }
+        );
+        console.log(updatePwdOp);
+        res.send({
           status: "success",
-          authData
+          data: updatePwdOp
         });
-      } catch (error) {}
+      }
+    } else {
+      throw new Error("The user not found");
     }
-  });
+  } catch (error) {
+    res.json({
+      status: "success",
+      error
+    });
+  }
 };
 
 // user logout
 const userLogout = async (req, res) => {
-  
+  try {
+    console.log('username is ', req.username)
+    let result = await redisClient.HDEL([
+      "LoginTokens",
+      req.body.username
+    ]);   
+    let isDeleted = await redisClient.HDEL([
+      "LoginTokens",
+      req.body.username
+    ]); 
+    console.log(result, "\n", isDeleted);
+
+    if (result) {
+      res.json({
+        status: "success",
+        isDeleted,
+        result
+      });
+    }
+  } catch (error) {}
 };
 
 // user register
@@ -118,7 +159,7 @@ const userRegister = async (req, res) => {
     res.status(400).json({
       status: "fail",
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }
@@ -142,5 +183,6 @@ module.exports = {
   userLogin,
   resetPassword,
   userRegister,
-  verifyToken
+  verifyToken,
+  userLogout
 };
