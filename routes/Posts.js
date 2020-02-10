@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
+
 
 const {
   getAllPosts,
@@ -9,7 +11,9 @@ const {
   newPost
 } = require("./PostFunctions");
 
-router.get("/", getAllPosts).post("/", newPost);
+const { verifyToken } = require("./userAuthFunctions")
+router.get("/", getAllPosts)
+router.post("/", verifyToken, newPost);
 router.get("/:postId", getAPost);
 router.put("/:postId", updateAPost);
 router.delete("/:postId", deleteAPost);

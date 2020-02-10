@@ -1,5 +1,7 @@
 const Post = require("../models/PostModel");
 const User = require("../models/UserModel");
+const jwt = require("jsonwebtoken");
+const secretKey = process.env.SECRET_KEY || "RmOeBolEiltZELionJuMEntErdanImEg";
 
 // get all posts
 const getAllPosts = async (req, res) => {
@@ -61,7 +63,7 @@ const updateAPost = async (req, res) => {
           }
         );
 
-        console.log(results);
+        // console.log(results);
         res.status(200).json({
           status: "success",
           data: {
@@ -90,7 +92,7 @@ const updateAPost = async (req, res) => {
       // console.log(results);
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     res.status(404).json({
       status: "fail",
       message: err.message,
@@ -121,30 +123,40 @@ const deleteAPost = async (req, res) => {
 
 // create a post & check if the author exists in users collection
 const newPost = async (req, res) => {
-  try {
-    const { body } = req;
-    const { author } = body;
-    const isUserExists = await User.findOne({ username: author });
-
-    if (isUserExists) {
-      const results = await Post.create(body);
-      res.status(200).json({
-        status: "success",
-        data: {
-          results
-        }
-      });
+  jwt.verify(req.token, secretKey, async (err, authData) => { 
+    if(err) {
+      // console.log(err)
+      res.sendStatus(403);
     } else {
-      throw new Error("User doesn't exist. You need to create account");
-    }
-  } catch (error) {
-    res.status(404).json({
-      status: "fail",
-      message: error.message,
-      error
-    });
+      // console.log(req)
+      try {
+        const { body } = req;
+        const { username } = authData.userData;
+        body.author = username;
+        const isUserExists = await User.findOne({ username });
+        // console.log(authData, "\n", username, isUserExists);
+        
+        if (isUserExists) {
+          const results = await Post.create(body);
+          res.status(200).json({
+            status: "success",
+            data: {
+              results
+            }
+          });
+        } else {
+          throw new Error("User doesn't exist. You need to create account");
+        }
+      } catch (error) {
+          res.status(404).json({
+            status: "fail",
+            message: error.message,
+            error
+            });
+        }
   }
-};
+})
+}
 
 module.exports = {
   getAllPosts,
