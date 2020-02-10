@@ -1,7 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const User = require("../models/UserModel"); 
-const redis = require('redis');
+const User = require("../models/UserModel");
+const redis = require("redis");
 const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
 // creates redis client
@@ -32,11 +32,11 @@ const userLogin = async (req, res) => {
         console.log("token", token);
         res.cookie("token", token, { maxAge: 1200 });
         res.status(200).json({
-            status: "success",
-            message: "Login successfull",
-            token,
-            data: userData
-          });
+          status: "success",
+          message: "Login successfull",
+          token,
+          data: userData
+        });
         res.end();
       } else {
         throw new Error("Either username or password was incorrect");
@@ -79,8 +79,50 @@ const resetPassword = async (req, res) => {
 
 // user logout
 const userLogout = async (req, res) => {
+  
+};
 
-}
+// user register
+const userRegister = async (req, res) => {
+  let errorsArr = ["errors"];
+  try {
+    const { body } = req;
+    const { username, email, password, confirmPassword } = body;
+    if (password !== confirmPassword) {
+      errorsArr.push({ msg: "Passwords donot match" });
+    }
+
+    if (password.length < 8) {
+      errorsArr.push({ msg: "Password must be greater than 8 characters" });
+    }
+
+    if (!username || !password || !confirmPassword || !email) {
+      errorsArr.push({ msg: "Please enter all the details" });
+    }
+
+    if (errorsArr.length > 1) {
+      throw { message: { errorsArr } };
+    } else {
+      // const { username, password, email } = body;
+      const newUser = {
+        username,
+        email,
+        password
+      };
+      const results = await User.create(newUser);
+      res.status(201).json({
+        status: "success"
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      data: {
+        message: error.message 
+      }
+    });
+  }
+};
 
 function verifyToken(req, res, next) {
   // get authorization header value
@@ -99,5 +141,6 @@ function verifyToken(req, res, next) {
 module.exports = {
   userLogin,
   resetPassword,
+  userRegister,
   verifyToken
 };
