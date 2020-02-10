@@ -1,7 +1,6 @@
 const Post = require("../models/PostModel");
 const User = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
-const secretKey = process.env.SECRET_KEY || "RmOeBolEiltZELionJuMEntErdanImEg";
 
 // get all posts
 const getAllPosts = async (req, res) => {
@@ -122,41 +121,38 @@ const deleteAPost = async (req, res) => {
 };
 
 // create a post & check if the author exists in users collection
-const newPost = async (req, res) => {
-  jwt.verify(req.token, secretKey, async (err, authData) => { 
-    if(err) {
-      // console.log(err)
-      res.sendStatus(403);
+const newPost = async (req, res, next) => {
+  try {
+    const post = {};
+
+    post.username = req.username;
+    post.title = req.body.title;
+    post.body = req.body.body;
+
+    const user = post.username;
+
+    const isUserExists = await User.findOne({ username: user });
+
+    if (isUserExists) {
+      const results = await Post.create(post);
+      res.status(200).json({
+        status: "success",
+        data: {
+          results
+        }
+      });
+      next();
     } else {
-      // console.log(req)
-      try {
-        const { body } = req;
-        const { username } = authData.userData;
-        body.author = username;
-        const isUserExists = await User.findOne({ username });
-        // console.log(authData, "\n", username, isUserExists);
-        
-        if (isUserExists) {
-          const results = await Post.create(body);
-          res.status(200).json({
-            status: "success",
-            data: {
-              results
-            }
-          });
-        } else {
-          throw new Error("User doesn't exist. You need to create account");
-        }
-      } catch (error) {
-          res.status(404).json({
-            status: "fail",
-            message: error.message,
-            error
-            });
-        }
+      throw new Error("User doesn't exist. You need to create account");
+    }
+  } catch (error) {
+    res.json({
+      status: "fail",
+      message: error.message,
+      error
+    });
   }
-})
-}
+};
 
 module.exports = {
   getAllPosts,
