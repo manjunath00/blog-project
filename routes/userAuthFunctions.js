@@ -1,17 +1,17 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const User = require("../models/UserModel");
+const User = require("../models/UserModel"); 
+const redis = require('redis');
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
-const app = express();
+// creates redis client
+const client = redis.createClient(REDIS_PORT);
+const secretKey = process.env.SECRET_KEY || "RmOeBolEiltZELionJuMEntErdanImEg";
+
+console.log("secret key is", secretKey);
 
 // TODO
 // USER signin
-
-// user sign in
-
-// all fields are required
-
-// password should match
 
 const userLogin = async (req, res) => {
   try {
@@ -24,14 +24,20 @@ const userLogin = async (req, res) => {
 
       // check for password & username are matching
       if (username === userData.username && password === userData.password) {
-        jwt.sign({ userData }, "secretKey", (err, token) => {
-          res.status(200).json({
+        const token = jwt.sign({ userData }, secretKey, {
+          algorithm: "HS256",
+          expiresIn: "2m"
+        });
+
+        console.log("token", token);
+        res.cookie("token", token, { maxAge: 1200 });
+        res.status(200).json({
             status: "success",
             message: "Login successfull",
             token,
             data: userData
           });
-        });
+        res.end();
       } else {
         throw new Error("Either username or password was incorrect");
       }
@@ -47,6 +53,51 @@ const userLogin = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  // console.log(req);
+
+  // login & get token
+  // update the password the only
+  // 1. verify the token
+  // 2. get both the password first password & confirm password
+  // 3. update the password in the database
+  jwt.verify(req.token, secretKey, (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      try {
+        const body = req.body;
+        const { oldPassword, newPassword, confirmPassword } = body;
+        res.json({
+          status: "success",
+          authData
+        });
+      } catch (error) {}
+    }
+  });
+};
+
+// user logout
+const userLogout = async (req, res) => {
+
+}
+
+function verifyToken(req, res, next) {
+  // get authorization header value
+  const bearerHeader = req.headers["authorization"];
+
+  // check if the token is present
+  if (typeof bearerHeader !== undefined) {
+    const bearer = bearerHeader.split(" ");
+    req.token = bearer[1];
+    next();
+  } else {
+    res.sendStatus(403);
+  }
+}
+
 module.exports = {
-  userLogin
+  userLogin,
+  resetPassword,
+  verifyToken
 };
