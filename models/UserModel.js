@@ -15,19 +15,8 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    required: true
-  },
-  Posts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post"
-    }
-  ]
-});
+  }
+}, {timeStamps: true});
 
 const User = mongoose.model("User", UserSchema);
 
