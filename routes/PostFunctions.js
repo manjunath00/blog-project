@@ -51,7 +51,7 @@ const updateAPost = async (req, res) => {
     const body = req.body;
     console.log(body["author"]);
     // if author is updated check if it is in users collection
-    if (body["author"]) {
+    if (body["username"]) {
       const isUserExists = await User.findOne({ username: body["author"] });
       if (isUserExists) {
         const results = await Post.update(
@@ -71,7 +71,7 @@ const updateAPost = async (req, res) => {
         });
       } else {
         // throws error if it is not in the users collection
-        throw new Error("You need to add the user before adding the post");
+        throw new Error("You need to signup before adding the post");
       }
     } else {
       const results = await Post.update(

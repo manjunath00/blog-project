@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const doenv = require("dotenv").config();
 
 const User = require("../models/UserModel");
 const { redisClient } = require("../config/database");
@@ -72,6 +71,7 @@ const resetPassword = async (req, res) => {
   try {
     const body = req.body;
     const email = req.email;
+    const oldPassword = req.body.oldPassword;
     const newPassword = req.body.newPassword;
     const confirmPassword = req.body.confirmPassword;
     const userInfo = await User.findOne({ email });
@@ -102,15 +102,9 @@ const resetPassword = async (req, res) => {
 // user logout
 const userLogout = async (req, res) => {
   try {
-    console.log('username is ', req.username)
-    let result = await redisClient.HDEL([
-      "LoginTokens",
-      req.body.username
-    ]);   
-    let isDeleted = await redisClient.HDEL([
-      "LoginTokens",
-      req.body.username
-    ]); 
+    console.log("username is ", req.username);
+    let result = await redisClient.HDEL(["LoginTokens", req.body.username]);
+    let isDeleted = await redisClient.HDEL(["LoginTokens", req.body.username]);
     console.log(result, "\n", isDeleted);
 
     if (result) {
@@ -120,15 +114,22 @@ const userLogout = async (req, res) => {
         result
       });
     }
-  } catch (error) {}
+  } catch (error) {
+    res.json({
+      error
+    });
+  }
 };
 
 // user register
 const userRegister = async (req, res) => {
   let errorsArr = ["errors"];
   try {
-    const { body } = req;
-    const { username, email, password, confirmPassword } = body;
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+
     if (password !== confirmPassword) {
       errorsArr.push({ msg: "Passwords donot match" });
     }
@@ -144,7 +145,6 @@ const userRegister = async (req, res) => {
     if (errorsArr.length > 1) {
       throw { message: { errorsArr } };
     } else {
-      // const { username, password, email } = body;
       const newUser = {
         username,
         email,
@@ -152,7 +152,8 @@ const userRegister = async (req, res) => {
       };
       const results = await User.create(newUser);
       res.status(201).json({
-        status: "success"
+        status: "success",
+        results
       });
     }
   } catch (error) {
@@ -165,24 +166,9 @@ const userRegister = async (req, res) => {
   }
 };
 
-function verifyToken(req, res, next) {
-  // get authorization header value
-  const bearerHeader = req.headers["authorization"];
-
-  // check if the token is present
-  if (typeof bearerHeader !== undefined) {
-    const bearer = bearerHeader.split(" ");
-    req.token = bearer[1];
-    next();
-  } else {
-    res.sendStatus(403);
-  }
-}
-
 module.exports = {
   userLogin,
   resetPassword,
   userRegister,
-  verifyToken,
   userLogout
 };

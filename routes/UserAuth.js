@@ -13,7 +13,7 @@ const { validateToken } = require("../auth/auth");
 
 router.post("/login", userLogin);
 router.post("/register", userRegister);
-router.post("/logout", userLogout);
+router.post("/logout", validateToken, userLogout);
 router.post("/password", validateToken, resetPassword);
 
 module.exports = router;

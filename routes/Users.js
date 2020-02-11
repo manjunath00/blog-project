@@ -10,10 +10,12 @@ const {
   deleteAUser
 } = require("./UserFuntions");
 
+const { validateToken } = require("../auth/auth");
+
 router.post("/", createAUser);
 router.get("/", getAllUsers);
 router.get("/:userId", getAUser);
-router.put("/:userId", updateAUser);
-router.delete("/:userId", deleteAUser);
+router.put("/:userId", validateToken, updateAUser);
+router.delete("/:userId", validateToken, deleteAUser);
 
 module.exports = router;

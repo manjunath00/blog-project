@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config()
+const result = require("dotenv").config();
+
 // custom imports
 const { DB, options, redisClient } = require("./config/database.js");
 
@@ -30,6 +31,7 @@ app.use("/api/users", require("./routes/Users"));
 // user authentication
 app.use("/api/account", require("./routes/UserAuth"));
 
+// configure port number
 const PORT = process.env.PORT || 3200;
 
 app.get("/", (req, res) => {
