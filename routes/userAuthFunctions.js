@@ -35,7 +35,7 @@ const userLogin = async (req, res) => {
           }
         });
 
-        console.log("token", token);
+        // console.log("token", token);
         res.cookie("token", token, { maxAge: 1200 });
         res.status(200).json({
           status: "success",
@@ -75,8 +75,12 @@ const resetPassword = async (req, res) => {
     const newPassword = req.body.newPassword;
     const confirmPassword = req.body.confirmPassword;
     const userInfo = await User.findOne({ email });
+    // console.log(userInfo)
     if (userInfo) {
-      if (newPassword === confirmPassword) {
+      if (
+        newPassword === confirmPassword &&
+        userInfo.password === oldPassword
+      ) {
         const updatePwdOp = await User.findOneAndUpdate(
           { email },
           { $set: { password: newPassword } },
@@ -87,13 +91,16 @@ const resetPassword = async (req, res) => {
           status: "success",
           data: updatePwdOp
         });
+      } else {
+        throw new Error("Passwords do not match");
       }
     } else {
       throw new Error("The user not found");
     }
   } catch (error) {
     res.json({
-      status: "success",
+      status: "fail",
+      message: error.message,
       error
     });
   }
@@ -116,6 +123,8 @@ const userLogout = async (req, res) => {
     }
   } catch (error) {
     res.json({
+      status: "fail",
+      message: error.message,
       error
     });
   }
@@ -123,7 +132,8 @@ const userLogout = async (req, res) => {
 
 // user register
 const userRegister = async (req, res) => {
-  let errorsArr = ["errors"];
+  // let errorsArr = ["errors"];
+  let errorsArr = [];
   try {
     const username = req.body.username;
     const email = req.body.email;
@@ -131,7 +141,7 @@ const userRegister = async (req, res) => {
     const confirmPassword = req.body.confirmPassword;
 
     if (password !== confirmPassword) {
-      errorsArr.push({ msg: "Passwords donot match" });
+      errorsArr.push({ msg: "Passwords do not match" });
     }
 
     if (password.length < 8) {
@@ -159,9 +169,8 @@ const userRegister = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       status: "fail",
-      data: {
-        message: error.message
-      }
+      // message: error.message,
+      error
     });
   }
 };

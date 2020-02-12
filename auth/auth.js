@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const secretKey = process.env.SECRET_KEY || "RmOeBolEiltZELionJuMEntErdanImEg";
+const secretKey = process.env.SECRET_KEY
 const { redisClient } = require("../config/database.js");
 
 const validateToken = async (req, res, next) => {
@@ -10,26 +10,27 @@ const validateToken = async (req, res, next) => {
     const token = authorizationHeader.split(" ")[1];
 
     try {
-      result = jwt.verify(token, secretKey);
-      // send it to req
-      console.log(result);
+      result = jwt.verify(token, secretKey); 
+      // console.log(result);
       req.decoded = result;
       req.username = result.userData.username;
-      console.log(req.username)
+      // console.log(req.username)
       const isLoggedOut = await redisClient.hget("LoginTokens", req.username);
-      console.log(isLoggedOut)
+      // console.log(isLoggedOut)
 
-      if(isLoggedOut) {
-        req.email = result.userData.email; 
+      if (isLoggedOut) {
+        req.username = result.userData.username;
+        req.email = result.userData.email;
         next();
-      }else {
-        throw new Error({ msg : "User already logged out "})
+      } else {
+        throw new Error({ message: "User already logged out " });
       }
-    } catch (error) { 
+    } catch (error) {
       res.json({
         status: "fail",
+        message: error.message,
         error
-      })
+      });
     }
   } else {
     // no token

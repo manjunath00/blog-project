@@ -49,46 +49,29 @@ const updateAPost = async (req, res) => {
   try {
     const postId = { _id: req.params.id };
     const body = req.body;
-    console.log(body["author"]);
-    // if author is updated check if it is in users collection
-    if (body["username"]) {
-      const isUserExists = await User.findOne({ username: body["author"] });
-      if (isUserExists) {
-        const results = await Post.update(
-          req.params.id,
-          { $set: body },
-          {
-            returnNewDocument: true
-          }
-        );
 
-        // console.log(results);
-        res.status(200).json({
-          status: "success",
-          data: {
-            results
-          }
-        });
-      } else {
-        // throws error if it is not in the users collection
-        throw new Error("You need to signup before adding the post");
-      }
-    } else {
-      const results = await Post.update(
-        req.params.id,
-        { $set: body },
+    const thePost = await Post.findById(req.params.postId);
+    // console.log(thePost);
+
+    if (thePost.username === req.username) {
+      const updatedPost = await Post.updateOne(
+        postId,
+        { $set: { body } },
         {
-          returnNewDocument: true
+          upsert: true
         }
       );
-      res.status(200).json({
+
+      // console.log(updatedPost);
+
+      res.json({
         status: "success",
         data: {
-          results
+          updatedPost
         }
       });
-
-      // console.log(results);
+    } else {
+      throw new Error("You cannot access this page");
     }
   } catch (err) {
     // console.log(err);
@@ -105,12 +88,17 @@ const deleteAPost = async (req, res) => {
     const postId = req.params.postId;
     const results = await Post.findByIdAndDelete(postId);
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        results
-      }
-    });
+    console.log(results);
+    if (results.username === req.username || results.author === req.username) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          results
+        }
+      });
+    } else {
+      throw new Error("You do not have access to this page");
+    }
   } catch (err) {
     res.status(404).json({
       status: "fail",
