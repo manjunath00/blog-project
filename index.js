@@ -1,6 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const result = require("dotenv").config();
+// graphql
+const graphqlHTTP = require("express-graphql");
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolver = require("./graphql/resolvers");
 
 // custom imports
 const { DB, options, redisClient } = require("./config/database.js");
@@ -22,14 +26,25 @@ redisClient.on("error", function(error) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// graphql route
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true
+  })
+);
+
+
 // posts routes
-app.use("/api/posts", require("./routes/Posts"));
+// app.use("/api/posts", require("./routes/Posts"));
 
 // users routes
-app.use("/api/users", require("./routes/Users"));
+// app.use("/api/users", require("./routes/Users"));
 
 // user authentication
-app.use("/api/account", require("./routes/UserAuth"));
+// app.use("/api/account", require("./routes/UserAuth"));
 
 // configure port number
 const PORT = process.env.PORT || 3200;
