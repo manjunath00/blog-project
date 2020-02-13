@@ -5,8 +5,8 @@ const PostSchema = new Schema(
   {
     title: {
       type: String,
-      required: true
-      // unique: true
+      required: true,
+      unique: true
     },
     body: {
       type: String,
@@ -15,10 +15,6 @@ const PostSchema = new Schema(
     username: {
       type: String,
       required: true
-    },
-    date: {
-      type: Date,
-      default: Date.now
     }
   },
   { timestamps: true }

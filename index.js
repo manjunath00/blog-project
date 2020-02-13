@@ -5,6 +5,7 @@ const result = require("dotenv").config();
 const graphqlHTTP = require("express-graphql");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
+const { validateToken } = require("./auth/auth");
 
 // custom imports
 const { DB, options, redisClient } = require("./config/database.js");
@@ -26,6 +27,9 @@ redisClient.on("error", function(error) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// validate token
+app.use(validateToken);
+
 // graphql route
 app.use(
   "/graphql",
@@ -35,7 +39,6 @@ app.use(
     graphiql: true
   })
 );
-
 
 // posts routes
 // app.use("/api/posts", require("./routes/Posts"));
